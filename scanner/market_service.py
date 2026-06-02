@@ -1,31 +1,13 @@
-from datetime import datetime, timedelta
+import json
+import os
 
 from config.stocks import STOCKS
 from scanner.stock_service import analyze_stock
 
-
-CACHE = {
-    "data": None,
-    "last_update": None
-}
-
-CACHE_MINUTES = 5
+CACHE_FILE = "cache/market_cache.json"
 
 
-def get_market_pulse():
-
-    global CACHE
-
-    # Return cached data if still fresh
-    if (
-        CACHE["data"] is not None
-        and CACHE["last_update"] is not None
-        and datetime.now() - CACHE["last_update"] < timedelta(minutes=CACHE_MINUTES)
-    ):
-        print("Using cached market pulse")
-        return CACHE["data"]
-
-    print("Refreshing market pulse...")
+def refresh_market_cache():
 
     results = []
 
@@ -35,21 +17,34 @@ def get_market_pulse():
 
             result = analyze_stock(symbol)
 
-            if result:
-                results.append(result)
+            results.append(result)
 
         except Exception as e:
 
-            print(f"Failed for {symbol}: {e}")
+            print(f"Failed: {symbol} -> {e}")
 
     results.sort(
         key=lambda x: x["afa_score"],
         reverse=True
     )
 
-    top_results = results[:20]
+    results = results[:20]
 
-    CACHE["data"] = top_results
-    CACHE["last_update"] = datetime.now()
+    os.makedirs("cache", exist_ok=True)
 
-    return top_results
+    with open(CACHE_FILE, "w") as f:
+
+        json.dump(results, f)
+
+    return results
+
+
+def get_market_pulse():
+
+    if not os.path.exists(CACHE_FILE):
+
+        return refresh_market_cache()
+
+    with open(CACHE_FILE, "r") as f:
+
+        return json.load(f)
