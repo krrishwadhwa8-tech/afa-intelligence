@@ -1,0 +1,9 @@
+symbol,total_score,volume_score,breakout_score,momentum_score,trend_score,reasons
+LT.NS,38.710178938170706,9.083251726071476,0,4.62692721209923,25,"['Positive momentum', 'Trading above 50-day average']"
+INFY.NS,37.20533213063605,19.996577602969815,0,17.208754527666237,0,"['Volume is above average', 'Positive momentum']"
+TCS.NS,25.0,25.0,0,0.0,0,['Volume is above average']
+HDFCBANK.NS,20.22992932975317,20.22992932975317,0,0.0,0,['Volume is above average']
+ITC.NS,19.01659734999567,19.01659734999567,0,0.0,0,['Volume is above average']
+SBIN.NS,9.897592273669112,9.897592273669112,0,0.0,0,['No strong signals detected']
+RELIANCE.NS,9.042907140466703,9.042907140466703,0,0.0,0,['No strong signals detected']
+ICICIBANK.NS,8.48622029196621,8.48622029196621,0,0.0,0,['No strong signals detected']

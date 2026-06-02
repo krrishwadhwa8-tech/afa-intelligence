@@ -1,0 +1,15 @@
+# Signal Weights
+
+VOLUME_MAX_SCORE = 25
+MOMENTUM_MAX_SCORE = 25
+TREND_MAX_SCORE = 25
+BREAKOUT_MAX_SCORE = 25
+
+# Scanner Settings
+
+TOP_STOCKS_TO_SHOW = 5
+
+# Moving Averages
+
+SHORT_MA_PERIOD = 20
+LONG_MA_PERIOD = 50
