@@ -20,7 +20,7 @@ symbol = sys.argv[1]
 
 df = yf.download(
     symbol,
-    period="60d",
+    period="1y",
     progress=False,
     auto_adjust=False
 )

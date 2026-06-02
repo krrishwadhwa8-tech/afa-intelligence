@@ -1,31 +1,36 @@
+import pandas as pd
+
+
 def calculate_rsi(closes, period=14):
 
-    gains = []
-    losses = []
+    close = pd.Series(closes)
 
-    for i in range(1, len(closes)):
+    delta = close.diff()
 
-        change = closes[i] - closes[i - 1]
+    gain = delta.clip(lower=0)
 
-        if change > 0:
-            gains.append(change)
-            losses.append(0)
+    loss = -delta.clip(upper=0)
 
-        else:
-            gains.append(0)
-            losses.append(abs(change))
+    avg_gain = gain.ewm(
+        alpha=1 / period,
+        adjust=False
+    ).mean()
 
-    avg_gain = sum(gains[-period:]) / period
-    avg_loss = sum(losses[-period:]) / period
-
-    if avg_loss == 0:
-        return 100
+    avg_loss = loss.ewm(
+        alpha=1 / period,
+        adjust=False
+    ).mean()
 
     rs = avg_gain / avg_loss
 
-    rsi = 100 - (100 / (1 + rs))
+    rsi = 100 - (
+        100 / (1 + rs)
+    )
 
-    return round(rsi, 2)
+    return round(
+        float(rsi.iloc[-1]),
+        2
+    )
 
 
 def get_rsi_score(rsi):
