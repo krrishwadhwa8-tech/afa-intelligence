@@ -1,8 +1,7 @@
 from fastapi import APIRouter
 
-from scanner.market_service import (
-    get_market_pulse
-)
+from scanner.market_service import get_market_pulse
+from utils.market_status import get_market_status
 
 router = APIRouter()
 
@@ -10,16 +9,12 @@ router = APIRouter()
 @router.get("/dashboard")
 def dashboard():
 
-    market_data = get_market_pulse()
+    stocks = get_market_pulse()
 
-    top_stock = (
-        market_data[0]
-        if market_data
-        else None
-    )
+    hero_stock = stocks[0] if stocks else None
 
     return {
-        "platform": "AFA Intelligence",
-        "top_stock": top_stock,
-        "market_pulse": market_data[:5]
+        "market": get_market_status(),
+        "hero_stock": hero_stock,
+        "top_stocks": stocks[:5]
     }
