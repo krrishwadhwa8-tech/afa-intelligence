@@ -1,6 +1,11 @@
 import json
 import os
 
+from concurrent.futures import (
+    ThreadPoolExecutor,
+    as_completed
+)
+
 from config.stocks import STOCKS
 from scanner.stock_service import analyze_stock
 
@@ -11,40 +16,74 @@ def refresh_market_cache():
 
     results = []
 
-    for symbol in STOCKS:
+    os.makedirs(
+        "cache",
+        exist_ok=True
+    )
 
-        try:
+    with ThreadPoolExecutor(
+        max_workers=20
+    ) as executor:
 
-            result = analyze_stock(symbol)
+        futures = {
+            executor.submit(
+                analyze_stock,
+                symbol
+            ): symbol
+            for symbol in STOCKS
+        }
 
-            results.append(result)
+        for future in as_completed(
+            futures
+        ):
 
-        except Exception as e:
+            try:
 
-            print(f"Failed: {symbol} -> {e}")
+                result = future.result()
+
+                if result:
+
+                    results.append(
+                        result
+                    )
+
+            except Exception as e:
+
+                print(
+                    f"Failed: {futures[future]} -> {e}"
+                )
 
     results.sort(
         key=lambda x: x["afa_score"],
         reverse=True
     )
 
-    results = results[:20]
+    top_results = results[:50]
 
-    os.makedirs("cache", exist_ok=True)
+    with open(
+        CACHE_FILE,
+        "w"
+    ) as f:
 
-    with open(CACHE_FILE, "w") as f:
+        json.dump(
+            top_results,
+            f
+        )
 
-        json.dump(results, f)
-
-    return results
+    return top_results
 
 
 def get_market_pulse():
 
-    if not os.path.exists(CACHE_FILE):
+    if not os.path.exists(
+        CACHE_FILE
+    ):
 
         return refresh_market_cache()
 
-    with open(CACHE_FILE, "r") as f:
+    with open(
+        CACHE_FILE,
+        "r"
+    ) as f:
 
         return json.load(f)
