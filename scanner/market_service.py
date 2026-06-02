@@ -1,74 +1,80 @@
-import json
-import os
+from concurrent.futures import (
+    ThreadPoolExecutor,
+    as_completed
+)
 
 from config.stocks import STOCKS
 from scanner.stock_service import analyze_stock
 
-CACHE_FILE = "cache/market_cache.json"
+
+market_cache = []
 
 
 def refresh_market_cache():
 
+    global market_cache
+
     results = []
 
-    os.makedirs(
-        "cache",
-        exist_ok=True
-    )
+    with ThreadPoolExecutor(
+        max_workers=20
+    ) as executor:
 
-    for symbol in STOCKS:
-
-        try:
-
-            result = analyze_stock(
+        futures = {
+            executor.submit(
+                analyze_stock,
                 symbol
-            )
+            ): symbol
+            for symbol in STOCKS
+        }
 
-            if result:
+        for future in as_completed(
+            futures
+        ):
 
-                results.append(
-                    result
+            symbol = futures[future]
+
+            try:
+
+                result = future.result()
+
+                if result:
+
+                    results.append(
+                        result
+                    )
+
+            except Exception as e:
+
+                print(
+                    f"Failed: {symbol} -> {e}"
                 )
-
-        except Exception as e:
-
-            print(
-                f"Failed: {symbol} -> {e}"
-            )
 
     results.sort(
         key=lambda x: x["afa_score"],
         reverse=True
     )
 
-    top_results = results[:50]
+    market_cache = results[:50]
 
-    with open(
-        CACHE_FILE,
-        "w"
-    ) as f:
+    print(
+        f"Market cache refreshed: "
+        f"{len(market_cache)} stocks"
+    )
 
-        json.dump(
-            top_results,
-            f
-        )
-
-    return top_results
+    return market_cache
 
 
 def get_market_pulse():
 
-    if not os.path.exists(
-        CACHE_FILE
-    ):
+    global market_cache
 
-        return refresh_market_cache()
+    if not market_cache:
 
-    with open(
-        CACHE_FILE,
-        "r"
-    ) as f:
-
-        return json.load(
-            f
+        print(
+            "Cache empty. Building..."
         )
+
+        refresh_market_cache()
+
+    return market_cache
