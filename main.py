@@ -6,7 +6,7 @@ from api.market_pulse import router as market_router
 from api.dashboard import router as dashboard_router
 from routers.admin import router as admin_router
 
-app.include_router(admin_router)
+
 
 
 app = FastAPI(
@@ -14,6 +14,8 @@ app = FastAPI(
     version="1.0"
 )
 
+
+app.include_router(admin_router)
 # CORS for Lovable and other frontends
 app.add_middleware(
     CORSMiddleware,
