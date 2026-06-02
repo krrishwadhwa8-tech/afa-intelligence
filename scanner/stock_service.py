@@ -13,39 +13,36 @@ def analyze_stock(symbol):
         symbol,
         period="60d",
         progress=False,
-        auto_adjust=True
+        auto_adjust=False
     )
 
     if df.empty:
-        raise Exception(f"No data found for {symbol}")
+        raise Exception(f"No data for {symbol}")
 
-    close_series = df["Close"].astype(float)
+    # Convert all columns safely to Series
+    close = df["Close"].squeeze()
+    volume = df["Volume"].squeeze()
+    high = df["High"].squeeze()
 
-    volume_series = df["Volume"].astype(float)
+    avg_volume = volume.tail(30).mean()
 
-    high_series = df["High"].astype(float)
-
-    avg_volume = volume_series.tail(30).mean()
-
-    today_volume = volume_series.iloc[-1]
+    today_volume = volume.iloc[-1]
 
     volume_ratio = today_volume / avg_volume
 
-    close_price = close_series.iloc[-1]
+    close_price = close.iloc[-1]
 
-    avg_close_20 = close_series.tail(20).mean()
+    avg_close_20 = close.tail(20).mean()
 
-    sma_50 = close_series.tail(50).mean()
+    sma_50 = close.tail(50).mean()
 
-    previous_high = high_series.iloc[-21:-1].max()
+    previous_high = high.iloc[-21:-1].max()
 
-    rsi = calculate_rsi(
-        close_series.tolist()
-    )
+    close_series = close.tolist()
 
-    volatility = calculate_volatility(
-        close_series.tolist()
-    )
+    rsi = calculate_rsi(close_series)
+
+    volatility = calculate_volatility(close_series)
 
     score = calculate_score(
         volume_ratio,
@@ -73,13 +70,17 @@ def analyze_stock(symbol):
         "symbol": symbol,
         "afa_score": score["total_score"],
         "verdict": verdict,
+
         "volume_score": score["volume_score"],
         "momentum_score": score["momentum_score"],
         "trend_score": score["trend_score"],
         "breakout_score": score["breakout_score"],
-        "rsi": rsi,
+
+        "rsi": round(rsi, 2),
         "rsi_score": score["rsi_score"],
-        "volatility": volatility,
+
+        "volatility": round(volatility, 2),
         "volatility_score": score["volatility_score"],
+
         "reasons": reasons
     }
