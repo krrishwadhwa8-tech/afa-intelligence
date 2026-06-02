@@ -1,16 +1,14 @@
 from fastapi import APIRouter
-
-from scanner.market_service import refresh_market_cache
+import os
 
 router = APIRouter()
 
+@router.get("/admin/cache-status")
+def cache_status():
 
-@router.get("/refresh-market")
-def refresh_market():
-
-    data = refresh_market_cache()
+    path = "cache/market_cache.json"
 
     return {
-        "success": True,
-        "stocks": len(data)
+        "exists": os.path.exists(path),
+        "path": path
     }
