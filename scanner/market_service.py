@@ -22,7 +22,7 @@ def refresh_market_cache():
     )
 
     with ThreadPoolExecutor(
-        max_workers=20
+        max_workers=5
     ) as executor:
 
         futures = {
